@@ -1,5 +1,5 @@
 // Original sustained title score. D-minor voicings from Compound with worn cassette coloration.
-// Fixed voice pools, no arpeggiator. Created only after a user gesture.
+// Shared title/pause score. Autoplay is attempted; browser-blocked audio retries on input.
 export class CassetteDrone {
     constructor(context) {
       this.ctx = context;
@@ -71,6 +71,7 @@ export class CassetteDrone {
       for(const source of this.sources)source.start();
       this.setWear(65);
       this.generation = 0;
+      this.playbackRequested = false;
       this.timer=setInterval(()=>this.schedule(),250);
 
     }
@@ -98,16 +99,26 @@ export class CassetteDrone {
       this.activeBank=1-this.activeBank;this.nextChange=start+30;
     }
     setVolume(value,fade=.3) {this.master.gain.setTargetAtTime(value/100*.45,this.ctx.currentTime,fade);}
-    async resume(value) {const generation=++this.generation;await this.ctx.resume();if(generation===this.generation)this.setVolume(value,1.1);}
-    async pause() {
+    async resume(value) {
       const generation=++this.generation;
+      this.playbackRequested=true;
+      await this.ctx.resume();
+      if(generation===this.generation)this.setVolume(value,1.1);
+      // Autoplay can resolve long after START, mute, or hiding the tab.
+      else if(!this.playbackRequested&&this.ctx.state==='running')await this.ctx.suspend();
+    }
+    async pause() {
+      this.playbackRequested=false;
+      const generation=++this.generation;
+      if(this.ctx.state==='closed')return;
       this.setVolume(0,.13);
       await new Promise(resolve=>setTimeout(resolve,650));
       if(generation===this.generation&&this.ctx.state!=='closed')await this.ctx.suspend();
     }
-    status() {return {context:this.ctx.state,sources:this.sources.length,arpeggiators:0};}
+    status() {return {context:this.ctx.state,requested:this.playbackRequested,gain:this.master.gain.value,sources:this.sources.length,arpeggiators:0};}
     async dispose() {
       ++this.generation;
+      this.playbackRequested=false;
       clearInterval(this.timer);
       for(const source of this.sources){try{source.stop();}catch{}}
       for(const node of this.nodes)node.disconnect();

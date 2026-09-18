@@ -9,15 +9,22 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let settings=cleanSettings(read(KEYS.settings)||{...DEFAULTS,motion:!reduced,reducedFlashing:reduced});
 let progress=cleanProgress(read(KEYS.progress)),mementos=read(KEYS.mementos)||{version:1,unlocked:{}};
 let phase='title',index=0,frame=null,adapter=null,loadId=0,pending=null,lastLoad={index:0,play:false},captionTimer,captionHide,unlocking=false,transitionAudio=null;
-let titleAudio=null,titleSoundEnabled=false;
-function syncTitleAudio(){
- const audible=titleSoundEnabled&&!settings.muted&&settings.music>0;
- $('title-sound').textContent=titleSoundEnabled?(audible?'SOUND ON':'SOUND MUTED'):'ENABLE SOUND';
- $('title-sound').setAttribute('aria-pressed',String(titleSoundEnabled));
- if(phase!=='title'||document.hidden||!audible){titleAudio?.pause().catch(()=>{});return;}
- try{if(!titleAudio){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;titleAudio=new CassetteDrone(new C());const context=titleAudio.ctx;context.onstatechange=()=>{$('title-sound').dataset.audioState=context.state;};}titleAudio.resume(settings.music*58).catch(()=>{$('title-sound').textContent='ENABLE SOUND';titleSoundEnabled=false;});}catch{$('title-sound').textContent='SOUND UNAVAILABLE';}
+let titleAudio=null;
+function syncMenuAudio(){
+ $('title-sound').textContent=settings.muted?'SOUND OFF':'SOUND ON';
+ $('title-sound').setAttribute('aria-pressed',String(!settings.muted));
+ const audible=['title','paused'].includes(phase)&&!document.hidden&&!settings.muted&&settings.music>0;
+ if(!audible){titleAudio?.pause().catch(()=>{});return;}
+ try{
+  if(!titleAudio){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;titleAudio=new CassetteDrone(new C());const context=titleAudio.ctx;context.onstatechange=()=>{$('title-sound').dataset.audioState=context.state;};$('title-sound').dataset.audioState=context.state;}
+  // Try autoplay immediately. A blocked context is retried on the next real input.
+  titleAudio.resume(settings.music*58).catch(()=>{});
+ }catch{$('title-sound').textContent='SOUND UNAVAILABLE';}
 }
 function pauseTitleAudio(){titleAudio?.pause().catch(()=>{});}
+function unlockMenuAudio(event){if(event.isTrusted&&titleAudio?.ctx.state!=='running')syncMenuAudio();}
+function listenForAudioUnlock(target){for(const type of ['pointerdown','pointerup','keydown'])target.addEventListener(type,unlockMenuAudio,{capture:true});}
+listenForAudioUnlock(document);
 const documents=new Map(),requests=new Map();
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function valid(source){return frame?.contentWindow===source;}
@@ -68,7 +75,7 @@ async function loadChapter(target,{play=false,transition=false}={}){
  const token=++loadId;lastLoad={index:target,play};hideCaption();
  if(pending){clearTimeout(pending.timer);pending.reject(new Error('Load superseded'));pending=null;}
  phase=play?'loading':'title';$('start').disabled=$('continue').disabled=true;
- if(play)pauseTitleAudio();else syncTitleAudio();
+ if(play)pauseTitleAudio();else syncMenuAudio();
  if(transition)veil(true,target===1?'DESCENDING':'ASCENDING',target===1?'SERVICE LIFT / B1':'SERVICE LIFT / SURFACE');
  else if(play)veil(true,'RECONNECTING',CHAPTERS[target].title);
  try{
@@ -78,11 +85,12 @@ async function loadChapter(target,{play=false,transition=false}={}){
   frame=document.createElement('iframe');frame.name='nivalis-campaign';frame.title=CHAPTERS[target].title;frame.setAttribute('allow','autoplay; fullscreen');
   const loaded=new Promise((resolve,reject)=>{pending={token,resolve,reject,timer:setTimeout(()=>reject(new Error('The scene did not initialize. Check WebGL support and retry.')),45000)};});
   frame.srcdoc=html;stage.append(frame);await loaded;if(token!==loadId)return;
+  listenForAudioUnlock(frame.contentDocument);
   clearTimeout(pending.timer);pending=null;
   if(play){beginPlay({caption:!transition});if(transition){await sleep(220);if(token!==loadId)return;showCaption();}$('veil').classList.add('fading');await sleep(settings.motion?800:80);if(token!==loadId)return;veil(false);endTransitionAudio();}
   else {veil(false);document.body.dataset.chapter='compound';refreshTitle();}
  }catch(error){
-  if(token!==loadId)return;clearTimeout(pending?.timer);pending=null;adapter?.pause();phase='error';unlock();endTransitionAudio();$('error-detail').textContent=error.message+' YOUR CHAPTER CHECKPOINT IS SAFE.';if(!$('load-error').open)$('load-error').showModal();
+  if(token!==loadId)return;clearTimeout(pending?.timer);pending=null;adapter?.pause();phase='error';syncMenuAudio();unlock();endTransitionAudio();$('error-detail').textContent=error.message+' YOUR CHAPTER CHECKPOINT IS SAFE.';if(!$('load-error').open)$('load-error').showModal();
  }
 }
 async function goTitle(){
@@ -102,10 +110,10 @@ function openSettings(){
 function setSettings(){
  const value={};for(const input of document.querySelectorAll('[data-setting]'))value[input.dataset.setting]=input.type==='checkbox'?input.checked:input.type==='range'?Number(input.value):input.value;
  settings=cleanSettings(value);write(KEYS.settings,settings);adapter?.applySettings(settings);
- syncTitleAudio();
+ syncMenuAudio();
 }
 function showFinal(){
- phase='complete';unlock();hideCaption();endTransitionAudio();$('final').hidden=false;$('title').hidden=true;veil(false);$('main-menu').focus();
+ phase='complete';syncMenuAudio();unlock();hideCaption();endTransitionAudio();$('final').hidden=false;$('title').hidden=true;veil(false);$('main-menu').focus();
 }
 window.__NIVALIS_CAMPAIGN__={
  getSettings:()=>({...settings}),
@@ -118,11 +126,11 @@ window.__NIVALIS_CAMPAIGN__={
   if(index===2){showFinal();return;}
   const next=index+1;startTransitionAudio(next===2);loadChapter(next,{play:true,transition:true});
  },
- failed(source){if(valid(source)){phase='failed';unlock();hideCaption();}},
- playing(source){if(valid(source)){phase='playing';frame.contentWindow.focus();}},
- paused(source){if(valid(source)&&phase==='playing'){phase='paused';unlock();}},
+ failed(source){if(valid(source)){phase='failed';syncMenuAudio();unlock();hideCaption();}},
+ playing(source){if(valid(source)){phase='playing';syncMenuAudio();frame.contentWindow.focus();}},
+ paused(source){if(valid(source)&&phase==='playing'){phase='paused';syncMenuAudio();unlock();}},
  release(source){if(valid(source))unlock();},
- lock(source){if(valid(source)){phase='playing';lock();}},
+ lock(source){if(valid(source)){phase='playing';syncMenuAudio();lock();}},
  title(source){if(valid(source))goTitle();},
  settings(source){if(valid(source))openSettings();}
 };
@@ -137,9 +145,10 @@ for(const type of ['keydown','keyup'])document.addEventListener(type,e=>{
  e.preventDefault();const w=frame.contentWindow;w.document.dispatchEvent(new w.KeyboardEvent(type,{key:e.key,code:e.code,repeat:e.repeat,shiftKey:e.shiftKey,bubbles:true,cancelable:true}));
 });
 window.addEventListener('blur',()=>{if(phase==='playing'&&document.activeElement!==frame)adapter?.pause();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){if(phase==='playing')adapter?.pause();transitionAudio?.suspend().catch(()=>{});}else if(phase==='loading')transitionAudio?.resume().catch(()=>{});syncTitleAudio();});
-$('title-sound').onclick=()=>{titleSoundEnabled=!titleSoundEnabled;syncTitleAudio();};
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(phase==='playing')adapter?.pause();transitionAudio?.suspend().catch(()=>{});}else if(phase==='loading')transitionAudio?.resume().catch(()=>{});syncMenuAudio();});
+$('title-sound').onclick=()=>{settings={...settings,muted:!settings.muted};write(KEYS.settings,settings);adapter?.applySettings(settings);syncMenuAudio();};
 window.addEventListener('pagehide',()=>{titleAudio?.dispose();titleAudio=null;endTransitionAudio();});
+window.addEventListener('pageshow',syncMenuAudio);
 $('start').onclick=()=>progress?$('new-game').showModal():newGame();$('confirm-start').onclick=newGame;
 $('continue').onclick=()=>{if(!progress||progress.complete)return;if(index===progress.chapter&&adapter)beginPlay({capture:true});else{lock(true);loadChapter(progress.chapter,{play:true});}};
 $('settings-open').onclick=openSettings;$('controls-open').onclick=()=>$('controls').showModal();$('main-menu').onclick=goTitle;

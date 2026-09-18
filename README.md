@@ -10,7 +10,7 @@ An atmospheric first-person game in three connected chapters. Infiltrate a froze
 
 ## Play
 
-Use a desktop browser with WebGL enabled. Select **ENABLE SOUND** on the main title for the cassette-textured drone. The default difficulty is **HARD**; accessibility and audio options are in **SETTINGS**.
+Use a desktop browser with WebGL enabled. Sound is on by default; the title and pause screens share a cassette-textured drone. If your browser blocks autoplay, click, tap or press a key to start the sound. The default difficulty is **HARD**; accessibility and audio options are in **SETTINGS**.
 
 Move with **WASD**, look with the **mouse**, and interact with **E**. Press **ESC** to pause. The in-game **CONTROLS** menu lists the full bindings. Progress saves at chapter boundaries on the current browser.
 
