@@ -8,7 +8,7 @@ function write(key,value){try{localStorage.setItem(key,JSON.stringify(value));}c
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let settings=cleanSettings(read(KEYS.settings)||{...DEFAULTS,motion:!reduced,reducedFlashing:reduced});
 let progress=cleanProgress(read(KEYS.progress)),mementos=read(KEYS.mementos)||{version:1,unlocked:{}};
-let phase='title',index=0,frame=null,adapter=null,loadId=0,pending=null,lastLoad={index:0,play:false},captionTimer,captionHide,unlocking=false,transitionAudio=null;
+let phase='title',index=0,frame=null,adapter=null,loadId=0,pending=null,lastLoad={index:0,play:false},captionTimer,captionHide,unlocking=false,locking=false,transitionAudio=null;
 let titleAudio=null;
 function syncMenuAudio(){
  $('title-sound').textContent=settings.muted?'SOUND OFF':'SOUND ON';
@@ -42,14 +42,19 @@ async function chapterDocument(key){
  if(!requests.has(key))requests.set(key,(async()=>{
   const embedded=window.__CHAPTERS__?.[key];
   const base=document.documentElement.dataset.chapterBase||'./chapters/';
-  const html=embedded?new TextDecoder().decode(Uint8Array.from(atob(embedded),c=>c.charCodeAt(0))):await fetch(`${base}${key}.html`).then(r=>{if(!r.ok)throw new Error(`Chapter download failed (${r.status}).`);return r.text();});
+  const html=embedded?new TextDecoder().decode(Uint8Array.from(atob(embedded),c=>c.charCodeAt(0))):await fetch(`${base}${key}.html?v=20260918-input1`).then(r=>{if(!r.ok)throw new Error(`Chapter download failed (${r.status}).`);return r.text();});
   if(!html.includes('data-nivalis-chapter="'+key+'"'))throw new Error('The chapter file is incomplete.');
   documents.set(key,html);return html;
  })().finally(()=>requests.delete(key)));
  return requests.get(key);
 }
 function unlock(){unlocking=true;if(document.pointerLockElement)document.exitPointerLock();setTimeout(()=>{unlocking=false;},100);}
-function lock(fromMenu=false){if(document.pointerLockElement===stage||matchMedia('(pointer:coarse)').matches||(!fromMenu&&phase!=='playing'))return;try{stage.requestPointerLock()?.catch(()=>{});}catch{}}
+function lock(fromMenu=false){
+ if(locking||document.pointerLockElement===stage||matchMedia('(pointer:coarse)').matches||(!fromMenu&&phase!=='playing'))return;
+ locking=true;
+ try{const request=stage.requestPointerLock();request?.catch(()=>{}).finally(()=>{locking=false;});}catch{locking=false;}
+}
+
 function endTransitionAudio(){transitionAudio?.close().catch(()=>{});transitionAudio=null;}
 function startTransitionAudio(up){
  if(settings.muted)return;
@@ -87,7 +92,7 @@ async function loadChapter(target,{play=false,transition=false}={}){
   frame.srcdoc=html;stage.append(frame);await loaded;if(token!==loadId)return;
   listenForAudioUnlock(frame.contentDocument);
   clearTimeout(pending.timer);pending=null;
-  if(play){beginPlay({caption:!transition});if(transition){await sleep(220);if(token!==loadId)return;showCaption();}$('veil').classList.add('fading');await sleep(settings.motion?800:80);if(token!==loadId)return;veil(false);endTransitionAudio();}
+  if(play){beginPlay({capture:true,caption:!transition});if(transition){await sleep(220);if(token!==loadId)return;showCaption();}$('veil').classList.add('fading');await sleep(settings.motion?800:80);if(token!==loadId)return;veil(false);endTransitionAudio();}
   else {veil(false);document.body.dataset.chapter='compound';refreshTitle();}
  }catch(error){
   if(token!==loadId)return;clearTimeout(pending?.timer);pending=null;adapter?.pause();phase='error';syncMenuAudio();unlock();endTransitionAudio();$('error-detail').textContent=error.message+' YOUR CHAPTER CHECKPOINT IS SAFE.';if(!$('load-error').open)$('load-error').showModal();
@@ -117,6 +122,7 @@ function showFinal(){
 }
 window.__NIVALIS_CAMPAIGN__={
  getSettings:()=>({...settings}),
+ canLook(source){return valid(source)&&phase==='playing'&&!document.pointerLockElement&&!document.querySelector('dialog[open]');},
  mementos(source,value){if(!valid(source))return null;if(value){mementos=value;write(KEYS.mementos,mementos);}return JSON.parse(JSON.stringify(mementos));},
  ready(source,api){if(!valid(source)||!pending)return;adapter=api;adapter.applySettings(settings);pending.resolve();},
  prepare(source){if(valid(source)&&index<2)chapterDocument(CHAPTERS[index+1].key).catch(()=>{});},
@@ -135,16 +141,18 @@ window.__NIVALIS_CAMPAIGN__={
  settings(source){if(valid(source))openSettings();}
 };
 // Keep mouse capture on the campaign document, so changing chapters needs no click.
-document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&!unlocking&&phase==='playing'){adapter?.pause();}});
+document.addEventListener('pointerlockerror',()=>{locking=false;});
+document.addEventListener('pointerlockchange',()=>{locking=false;if(!document.pointerLockElement&&!unlocking&&phase==='playing'){adapter?.pause();}});
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement===stage&&phase==='playing')adapter?.look(e.movementX,e.movementY);});
 for(const type of ['mousedown','mouseup'])document.addEventListener(type,e=>{if(document.pointerLockElement===stage&&phase==='playing'){adapter?.mouse(e.button,type==='mousedown');e.preventDefault();}});
 document.addEventListener('contextmenu',e=>{if(document.pointerLockElement===stage)e.preventDefault();});
 for(const type of ['keydown','keyup'])document.addEventListener(type,e=>{
  if(document.querySelector('dialog[open]')||!['playing','paused'].includes(phase)||!adapter)return;
  if(e.target.closest('button,input,select'))return;
- e.preventDefault();const w=frame.contentWindow;w.document.dispatchEvent(new w.KeyboardEvent(type,{key:e.key,code:e.code,repeat:e.repeat,shiftKey:e.shiftKey,bubbles:true,cancelable:true}));
+ e.preventDefault();const w=frame.contentWindow;(w.document.activeElement||w.document.body).dispatchEvent(new w.KeyboardEvent(type,{key:e.key,code:e.code,repeat:e.repeat,shiftKey:e.shiftKey,bubbles:true,cancelable:true}));
 });
-window.addEventListener('blur',()=>{if(phase==='playing'&&document.activeElement!==frame)adapter?.pause();});
+// Focusing a chapter is not an app blur; the campaign owns pause/capture for all scenes.
+window.addEventListener('blur',()=>{setTimeout(()=>{if(phase==='playing'&&!document.hasFocus())adapter?.pause();},0);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(phase==='playing')adapter?.pause();transitionAudio?.suspend().catch(()=>{});}else if(phase==='loading')transitionAudio?.resume().catch(()=>{});syncMenuAudio();});
 $('title-sound').onclick=()=>{settings={...settings,muted:!settings.muted};write(KEYS.settings,settings);adapter?.applySettings(settings);syncMenuAudio();};
 window.addEventListener('pagehide',()=>{titleAudio?.dispose();titleAudio=null;endTransitionAudio();});
