@@ -24,3 +24,9 @@ For offline play, extract the ZIP and open **PLAY.html**, or use the included lo
 - `licenses/` retains notices for Three.js, the 404 recipe adaptations and the bundled fonts.
 
 Built with the [404 game recipe](https://github.com/404-Repo/404-game-recipe). Music and sound effects are synthesized locally.
+
+## Release privacy
+
+The source delivery checks builds and ZIPs for known credential and privacy patterns, including embedded chapter code. Before publishing from a new clone, run `git config --local core.hooksPath .githooks` to enable the included pre-push check. It verifies outgoing commits, their public identity and archive contents. Approved identities are listed in `.privacy-policy.json`.
+
+These checks are a safeguard, not an exhaustive security audit. They do not remove copies or historical releases already published.
