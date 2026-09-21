@@ -24,3 +24,7 @@ dialog{width:min(560px,calc(100% - 32px));max-height:88dvh;padding:32px;backgrou
 .title-sound{position:absolute;right:28px;bottom:20px;min-height:44px;font-size:10px;letter-spacing:.1em;border:0;background:transparent;color:#949992;padding:10px}
 @media(max-width:650px){#title .brand{top:40%}#title .brand p{letter-spacing:.22em;text-indent:.22em}#title .actions{top:65%}.title-sound{right:12px;bottom:8px}}
 @media(max-height:560px){#title .brand{top:32%}#title .brand h1{font-size:clamp(38px,16vh,85px)}#title .brand p{margin-top:12px;font-size:11px}#title .actions{top:52%}#title .primary{min-height:36px;padding:8px}#title .links{margin:2px 0}#title .fine{margin:2px 0}.title-sound{bottom:6px;right:12px}}
+
+/* Do not hand in-game swipes to the outer browser viewport. */
+html,body{overscroll-behavior:none}
+#stage,#stage iframe{touch-action:none;overscroll-behavior:none}

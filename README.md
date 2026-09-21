@@ -26,7 +26,7 @@ For offline play, extract either ZIP and open **PLAY.html**, or use the included
 - `game/` is the original static web build, published through GitHub Pages.
 - `cel/` is the cel-shaded static web build, published alongside the original.
 - `NIVALIS-Operation-404-Complete-Campaign.zip` is the original delivery.
-- `NIVALIS-Operation-404-Cel-Atlas-Edition.zip` is the cel-shaded delivery (1.1.9; mobile outline precision fix).
+- `NIVALIS-Operation-404-Cel-Atlas-Edition.zip` is the cel-shaded delivery (1.1.10; mobile touch and outline fixes).
 - Each adjacent `.sha256` file verifies its ZIP; `SHA256SUMS.json` inside verifies the contents.
 - `licenses/` and `cel/licenses/` retain notices for Three.js, the 404 recipe adaptations and the bundled fonts.
 

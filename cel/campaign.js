@@ -42,7 +42,7 @@ async function chapterDocument(key){
  if(!requests.has(key))requests.set(key,(async()=>{
   const embedded=window.__CHAPTERS__?.[key];
   const base=document.documentElement.dataset.chapterBase||'./chapters/';
-  const html=embedded?new TextDecoder().decode(Uint8Array.from(atob(embedded),c=>c.charCodeAt(0))):await fetch(`${base}${key}.html?v=20260921-cel1.1.9`).then(r=>{if(!r.ok)throw new Error(`Chapter download failed (${r.status}).`);return r.text();});
+  const html=embedded?new TextDecoder().decode(Uint8Array.from(atob(embedded),c=>c.charCodeAt(0))):await fetch(`${base}${key}.html?v=20260921-cel1.1.10`).then(r=>{if(!r.ok)throw new Error(`Chapter download failed (${r.status}).`);return r.text();});
   if(!html.includes('data-nivalis-chapter="'+key+'"'))throw new Error('The chapter file is incomplete.');
   documents.set(key,html);return html;
  })().finally(()=>requests.delete(key)));
