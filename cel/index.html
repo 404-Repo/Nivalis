@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-chapter-base="./chapters/"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="A cel-shaded three-chapter descent through a frozen machine outpost. Stealth, buried secrets and a waking failsafe."><meta name="theme-color" content="#080e12"><title>NIVALIS: OPERATION 404 — CEL EDITION</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23b1cace' d='M32 4 60 54H4zm0 14L18 44h11l3-7 4 7h10z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./style.css"></head><body>
+<div id="stage" tabindex="-1" aria-label="GAME VIEW"></div>
+<main id="title" class="screen">
+ <div class="title-layout">
+ <div class="brand"><h1>NIVALIS</h1><p>OPERATION 404</p></div>
+ <nav class="actions" aria-label="MAIN MENU">
+  <button id="continue" class="primary" hidden>CONTINUE</button>
+  <button id="start" class="primary" disabled>START</button>
+  <div class="links"><button id="settings-open">SETTINGS</button><button id="controls-open">CONTROLS</button></div>
+  <p id="checkpoint-note" class="fine">INITIALIZING FIELD LINK</p>
+ </nav>
+ <button id="title-sound" class="title-sound" aria-pressed="true">SOUND ON</button>
+ </div>
+</main>
+<div id="veil" class="veil" hidden><div><span id="travel-label">DESCENDING</span><div class="travel-line"></div><p id="travel-detail" role="status">SERVICE LIFT / B1</p></div></div>
+<div id="chapter-caption" role="status" hidden><span id="caption-number"></span><strong id="caption-title"></strong></div>
+<section id="final" class="screen" hidden aria-labelledby="final-heading"><div class="shade"></div><div class="title-layout"><div class="topline">NIVALIS / OPERATION 404</div><div class="brand final-brand"><div class="eyebrow">ALL THREE CHAPTERS COMPLETE</div><h2 id="final-heading">OPERATION<br>COMPLETE</h2><p class="outcome">FAILSAFE NEUTRALIZED</p></div><div class="actions"><button id="main-menu" class="primary">MAIN TITLE <span aria-hidden="true">↗</span></button><div class="links"><button id="report-open">RUN SUMMARY</button></div></div><div class="footer">COMPOUND / LOWER STATION / WARDEN</div></div></section>
+<dialog id="settings"><div class="eyebrow">NIVALIS / OPERATION 404</div><h2>SETTINGS</h2><div class="setting fixed"><span>DIFFICULTY</span><strong>HARD</strong></div>
+ <label class="setting">FIELD AUDIO<input data-setting="muted" type="checkbox" aria-label="MUTE ALL AUDIO"><span class="help">MUTE</span></label>
+ <label class="setting">SYNTH SCORE<input data-setting="music" type="range" min="0" max="1" step=".05"></label>
+ <label class="setting">ATMOSPHERE<input data-setting="ambience" type="range" min="0" max="1" step=".05"></label>
+ <label class="setting">MASK BREATHING<input data-setting="breathing" type="range" min="0" max="1" step=".05"></label>
+ <label class="setting">MOUSE SENSITIVITY<input data-setting="sensitivity" type="range" min=".4" max="2" step=".1"></label>
+ <label class="setting">RENDER QUALITY<select data-setting="quality"><option value="low">LOW</option><option value="balanced">BALANCED</option><option value="high">HIGH</option></select></label>
+ <label class="setting">SURFACE FOG<select data-setting="fog"><option value="light">LIGHT</option><option value="atmospheric">ATMOSPHERIC</option><option value="dense">DENSE</option></select></label>
+ <h3>ACCESSIBILITY & INTERFACE</h3>
+ <label class="setting">REDUCED FLASHING<input data-setting="reducedFlashing" type="checkbox"></label>
+ <label class="setting">CAMERA MOTION<input data-setting="motion" type="checkbox"></label>
+ <label class="setting">MINIMAP & COMPASS<input data-setting="navigation" type="checkbox"></label>
+ <p class="fine">SETTINGS APPLY ACROSS THE CAMPAIGN. SURFACE FOG, BREATHING AND NAVIGATION APPLY TO OUTDOOR CHAPTERS.</p><button class="back" data-close>← BACK</button></dialog>
+<dialog id="controls"><div class="eyebrow">NIVALIS / OPERATION 404</div><h2>CONTROLS</h2><dl><dt>MOVE</dt><dd>W A S D</dd><dt>LOOK / FIRE</dt><dd>MOUSE / LMB</dd><dt>AIM</dt><dd>HOLD RMB / Q</dd><dt>INTERACT</dt><dd>E / HOLD E</dd><dt>SPRINT / CROUCH</dt><dd>SHIFT / C</dd><dt>JUMP / RELOAD</dt><dd>SPACE / R</dd><dt>MAP</dt><dd>M</dd><dt>BASEMENT FLASHLIGHT</dt><dd>F</dd><dt>PAUSE</dt><dd>ESC</dd></dl><p class="fine">TOUCH: USE THE ON-SCREEN CONTROLS. IF MOUSE CAPTURE IS UNAVAILABLE, HOLD AND DRAG TO LOOK.</p><p class="fine">PROGRESS SAVES AT THE START OF EACH CHAPTER. RETRY AND CONTINUE START THAT CHAPTER AGAIN.</p><button class="back" data-close>← BACK</button></dialog>
+<dialog id="new-game"><div class="eyebrow">NIVALIS / OPERATION 404</div><h2>NEW OPERATION</h2><p>START AGAIN AT COMPOUND? THIS REPLACES YOUR CHAPTER CHECKPOINT. SETTINGS AND MEMENTOS ARE KEPT.</p><button id="confirm-start" class="primary">START NEW OPERATION ↗</button><button class="back" data-close>← BACK</button></dialog>
+<dialog id="run-summary"><div class="eyebrow">NIVALIS / OPERATION 404</div><h2>RUN SUMMARY</h2><div id="reports"></div><button class="back" data-close>← BACK</button></dialog>
+<dialog id="load-error"><div class="eyebrow">FIELD LINK INTERRUPTED</div><h2>UNABLE TO LOAD</h2><p id="error-detail"></p><button id="retry-load" class="primary">RETRY CHAPTER ↗</button><button id="error-title" class="back">MAIN TITLE</button></dialog>
+<p id="storage-warning" class="storage-warning" role="status" hidden>LOCAL SAVING IS UNAVAILABLE. PROGRESS IS KEPT FOR THIS SESSION.</p>
+<script type="module" src="./campaign.js?v=20260921-cel1"></script>
+</body></html>

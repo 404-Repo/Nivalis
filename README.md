@@ -4,9 +4,14 @@ Beyond the last transmission, the compound is still listening. Descend beneath t
 
 An atmospheric first-person game in three connected chapters. Infiltrate a frozen machine outpost, uncover what lies beneath, and face what follows. Stealth, environmental puzzles and a dark, evolving synth score accompany one continuous operation.
 
-**[PLAY NIVALIS](https://404-repo.github.io/Nivalis/game/)**
+## Choose your edition
 
-**[DOWNLOAD THE COMPLETE CAMPAIGN](https://github.com/404-Repo/Nivalis/raw/refs/heads/main/NIVALIS-Operation-404-Complete-Campaign.zip)**
+| Edition | Play online | Download |
+| --- | --- | --- |
+| **Original** | [Play the original](https://404-repo.github.io/Nivalis/game/) | [Original campaign ZIP](https://github.com/404-Repo/Nivalis/raw/refs/heads/main/NIVALIS-Operation-404-Complete-Campaign.zip) |
+| **Cel-shaded** | [Play the cel-shaded edition](https://404-repo.github.io/Nivalis/cel/) | [Cel-shaded campaign ZIP](https://github.com/404-Repo/Nivalis/raw/refs/heads/main/NIVALIS-Operation-404-Cel-Atlas-Edition.zip) |
+
+The cel-shaded edition reimagines the same three-chapter campaign with graphic outlines, stylized materials, varied scenery and atmospheric skies. Both editions are available independently. Their progress, mementos and settings are saved separately in your browser.
 
 ## Play
 
@@ -14,14 +19,16 @@ Use a desktop browser with WebGL enabled. Sound is on by default; the title and 
 
 Move with **WASD**, look with the **mouse**, and interact with **E**. Press **ESC** to pause. The in-game **CONTROLS** menu lists the full bindings. Progress saves at chapter boundaries on the current browser.
 
-For offline play, extract the ZIP and open **PLAY.html**, or use the included local server. The ZIP contains all three chapters, editable source, bundled assets, licenses, build tools and a verification report. It requires no API keys or downloaded assets at runtime.
+For offline play, extract either ZIP and open **PLAY.html**, or use the included local server. Each ZIP contains all three chapters, editable source, bundled assets, licenses, build tools and a verification report. Neither edition requires API keys or downloaded assets at runtime.
 
 ## Repository
 
-- `game/` is the complete static web build, published through GitHub Pages.
-- `NIVALIS-Operation-404-Complete-Campaign.zip` is the final campaign delivery, including source and the standalone player.
-- The adjacent `.sha256` file verifies the ZIP; `SHA256SUMS.json` inside verifies its contents.
-- `licenses/` retains notices for Three.js, the 404 recipe adaptations and the bundled fonts.
+- `game/` is the original static web build, published through GitHub Pages.
+- `cel/` is the cel-shaded static web build, published alongside the original.
+- `NIVALIS-Operation-404-Complete-Campaign.zip` is the original delivery.
+- `NIVALIS-Operation-404-Cel-Atlas-Edition.zip` is the cel-shaded delivery (1.1.8).
+- Each adjacent `.sha256` file verifies its ZIP; `SHA256SUMS.json` inside verifies the contents.
+- `licenses/` and `cel/licenses/` retain notices for Three.js, the 404 recipe adaptations and the bundled fonts.
 
 Built with the [404 game recipe](https://github.com/404-Repo/404-game-recipe). Music and sound effects are synthesized locally.
 

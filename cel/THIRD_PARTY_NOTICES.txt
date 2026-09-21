@@ -1,0 +1,18 @@
+NIVALIS: OPERATION 404 — CEL EDITION
+
+Three.js r140 — Copyright 2010-2022 Three.js Authors. MIT License.
+See licenses/Three-MIT.txt.
+
+404 game recipe loader algorithm adaptation — 404 game recipe contributors.
+Source: https://github.com/404-Repo/404-game-recipe
+Apache License 2.0; see licenses/Apache-2.0.txt.
+Modified for the bundled r140 runtime: dependency-free attribute merging,
+strict error propagation, retained hierarchy, shadow flags and material keys.
+
+Black Han Sans, IBM Plex Mono, Barlow Condensed and Russo One are bundled
+under the SIL Open Font License. Their full notices are in licenses/.
+Original chapter-specific notices and font licenses are also retained.
+
+Atlas supplied concept references and art direction. Models, canvas artwork,
+shaders and synthesized audio are implemented locally. No Atlas connection,
+API key or hosted generation service is required to build or play this game.
